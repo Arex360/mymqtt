@@ -1,41 +1,10 @@
-/*
-ESP32-CAM MQTT
-Author : ChungYi Fu (Kaohsiung, Taiwan)  2022-1-30 13:00
-https://www.facebook.com/francefu
-
-Library: 
-https://www.arduino.cc/reference/en/libraries/pubsubclient/
-
-Command Format :  
-?cmd=P1;P2;P3;P4;P5;P6;P7;P8;P9
-
-?ip
-?mac
-?restart
-?resetwifi=ssid;password
-?inputpullup=pin
-?pinmode=pin;value
-?digitalwrite=pin;value
-?analogwrite=pin;value;channel
-?digitalread=pin
-?analogread=pin
-?touchread=pin  
-?getstill 
-?framesize=size      //size= UXGA|SXGA|XGA|SVGA|VGA|CIF|QVGA|HQVGA|QQVGA
-?quality=value       // value = 10 to 63
-?brightness=value    // value = -2 to 2
-?contrast=value      // value = -2 to 2 
-?flash=value;channel         //value= 0~255, channel= 3~15
-?servo=pin;value;channel     //value= 0~180, channel= 3~15
-*/
-
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
 #include "Base64.h"
-
+#include "ESP32_OV5640_AF.h"
 const char* ssid = "smart";
 const char* password = "1234567890";
 
@@ -94,147 +63,7 @@ byte equalState=0;
 byte semicolonState=0;
 
 String feedback = "";
-
-void executeCommand() {
-  //Serial.println("");
-  //Serial.println("command: "+command);
-  //Serial.println("cmd= "+cmd+" ,P1= "+P1+" ,P2= "+P2+" ,P3= "+P3+" ,P4= "+P4+" ,P5= "+P5+" ,P6= "+P6+" ,P7= "+P7+" ,P8= "+P8+" ,P9= "+P9);
-  //Serial.println("");
-  
-  if (cmd=="your cmd") {
-    // You can do anything
-    // feedback="Hello World";
-  }
-  else if (cmd=="ip") {
-    feedback=WiFi.localIP().toString();
-  }  
-  else if (cmd=="mac") {
-    feedback=WiFi.macAddress();
-  }  
-  else if (cmd=="restart") {
-    ESP.restart();
-  }
-  else if (cmd=="resetwifi") {
-    WiFi.begin(P1.c_str(), P2.c_str());
-    Serial.print("Connecting to ");
-    Serial.println(P1);
-    long int StartTime=millis();
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        if ((StartTime+5000) < millis()) break;
-    } 
-    if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("");
-        Serial.println("STAIP: "+WiFi.localIP().toString());
-        feedback=WiFi.localIP().toString();
-    }
-    else
-        feedback="failed";
-  }     
-  else if (cmd=="inputpullup") {
-    pinMode(P1.toInt(), INPUT_PULLUP);
-  }  
-  else if (cmd=="pinmode") {
-    if (P2.toInt()==1)
-      pinMode(P1.toInt(), OUTPUT);
-    else
-      pinMode(P1.toInt(), INPUT);
-  }        
-  else if (cmd=="digitalwrite") {
-    ledcDetachPin(P1.toInt());
-    pinMode(P1.toInt(), OUTPUT);
-    digitalWrite(P1.toInt(), P2.toInt());
-  }   
-  else if (cmd=="digitalread") {
-    feedback=String(digitalRead(P1.toInt()));
-  }
-  else if (cmd=="analogwrite") {
-    if (P3=="") P3="3";
-    int channel = P3.toInt();
-    ledcAttachPin(P1.toInt(), channel);
-    ledcSetup(channel, 5000, 8);
-    ledcWrite(channel,P2.toInt());
-  }     
-  else if (cmd=="analogread") {
-    feedback=String(analogRead(P1.toInt()));
-  }
-  else if (cmd=="touchread") {
-    feedback=String(touchRead(P1.toInt()));
-  }
-  else if (cmd=="flash") {
-    if (P3=="") P3="4";
-    int channel = P3.toInt();       
-    ledcAttachPin(4, channel);  
-    ledcSetup(channel, 5000, 8);   
-    int val = P1.toInt();
-    ledcWrite(channel,val);  
-  }
-  else if(cmd=="servo") {
-    if (P3=="") P3="5";
-    int channel = P3.toInt();     
-    ledcAttachPin(P1.toInt(), channel);
-    ledcSetup(channel, 50, 16);
-
-    int val = 7864-P2.toInt()*34.59; 
-    if (val > 7864)
-       val = 7864;
-    else if (val < 1638)
-      val = 1638; 
-    ledcWrite(channel, val);
-  }
-  else if (cmd=="framesize") { 
-    sensor_t * s = esp_camera_sensor_get();  
-    if (P1=="QQVGA")
-      s->set_framesize(s, FRAMESIZE_QQVGA);
-    else if (P1=="HQVGA")
-      s->set_framesize(s, FRAMESIZE_HQVGA);
-    else if (P1=="QVGA")
-      s->set_framesize(s, FRAMESIZE_QVGA);
-    else if (P1=="CIF")
-      s->set_framesize(s, FRAMESIZE_CIF);
-    else if (P1=="VGA")
-      s->set_framesize(s, FRAMESIZE_VGA);  
-    else if (P1=="SVGA")
-      s->set_framesize(s, FRAMESIZE_SVGA);
-    else if (P1=="XGA")
-      s->set_framesize(s, FRAMESIZE_XGA);
-    else if (P1=="SXGA")
-      s->set_framesize(s, FRAMESIZE_SXGA);
-    else if (P1=="UXGA")
-      s->set_framesize(s, FRAMESIZE_UXGA);           
-    else 
-      s->set_framesize(s, FRAMESIZE_QVGA);     
-  }
-  else if (cmd=="quality") { 
-    sensor_t * s = esp_camera_sensor_get();
-    int val = P1.toInt(); 
-    s->set_quality(s, val);
-  }
-  else if (cmd=="contrast") {
-    sensor_t * s = esp_camera_sensor_get();
-    int val = P1.toInt(); 
-    s->set_contrast(s, val);
-  }
-  else if (cmd=="brightness") {
-    sensor_t * s = esp_camera_sensor_get();
-    int val = P1.toInt();  
-    s->set_brightness(s, val);  
-  }    
-  else if (cmd=="getstill") {
-    feedback=sendImage();
-    if (feedback=="") {
-      Serial.println("feedback: "+feedback);
-      Serial.println("");
-      return;
-    }
-  }     
-  else {
-    feedback="Command is not defined";
-  } 
-
-  Serial.println("feedback: "+feedback);
-  Serial.println("");
-}
+OV5640 ov5640 = OV5640();
 
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  //關閉電源不穩就重開機的設定
@@ -246,7 +75,7 @@ void setup() {
   client.setServer(mqtt_server, mqtt_port);
   //client.setCallback(callback);
   // 1000
-  client.setBufferSize(2048);
+  client.setBufferSize(1000);
   //sendImage();
 }
 
@@ -255,24 +84,6 @@ void loop() {
     reconnect();
   }
   client.loop();
-}
-
-void callback(char* topic, byte* payload, unsigned int length) {
-  feedback="";command="";cmd="";P1="";P2="";P3="";P4="";P5="";P6="";P7="";P8="";P9="";
-  receiveState=0,cmdState=1,pState=1,questionState=0,equalState=0,semicolonState=0;
-    
-  Serial.print("[");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    char c = payload[i];
-    //getCommand(payload[i]);
-    Serial.print(c);
-  }
-  Serial.println();
-    
-  if (cmd!="") 
-      executeCommand();
 }
 
 void reconnect() {
@@ -286,6 +97,10 @@ void reconnect() {
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
     if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD)) {
+        Serial.println("opening lighst");
+        pinMode(4,OUTPUT);
+        analogWrite(4, 255);
+        delay(5000);
       Serial.println("connected");
       sendImage();
       // Once connected, publish an announcement...
@@ -336,8 +151,8 @@ void initCamera() {
   //                      for larger pre-allocated frame buffer.
   if(psramFound()){  //是否有PSRAM(Psuedo SRAM)記憶體IC
     config.frame_size = FRAMESIZE_FHD;
-    config.jpeg_quality = 10;
-    config.fb_count = 2;
+    config.jpeg_quality = 20;
+    config.fb_count = 1;
     Serial.println("ps ram found");
   } else {
     //config.frame_size = FRAMESIZE_SVGA;
@@ -429,6 +244,24 @@ void sendText(String text) {
 }
 
 String sendImage() {
+  //delay(2000);
+   if (ov5640.focusInit() == 0) {
+    Serial.println("OV5640_Focus_Init Successful!");
+  }
+
+  if (ov5640.autoFocusMode() == 0) {
+    Serial.println("OV5640_Auto_Focus Successful!");
+  }
+  uint8_t rc = ov5640.getFWStatus();
+  Serial.printf("FW_STATUS = 0x%x\n", rc);
+
+  if (rc == -1) {
+    Serial.println("Check your OV5640");
+  } else if (rc == FW_STATUS_S_FOCUSED) {
+    Serial.println("Focused!");
+  } else if (rc == FW_STATUS_S_FOCUSING) {
+    Serial.println("Focusing!");
+  }
   camera_fb_t * fb = NULL;
   Serial.println("Attempting to send image");
   fb = esp_camera_fb_get();  
@@ -464,7 +297,6 @@ String sendImage() {
            flag = "_0_";
         else 
             flag = "_1_";
-         delay(500);
         client.publish(MQTT_PUBLISH_TOPIC,(str+flag).c_str());
         Serial.println(str.length());
         chunks++;
@@ -476,43 +308,20 @@ String sendImage() {
         Serial.println(str.length());
         chunks++;
       }
-    }  
+       delay(800);
+    }
+    analogWrite(4, 0);  
     Serial.println(chunks);
     //Serial.println(chunks);
     //client.endPublish();
     //client.publish(MQTT_PUBLISH_TOPIC, imageFile.c_str());
     Serial.println("image sent");
+    delay(5000);
+   // ESP.restart();
     esp_camera_fb_return(fb);
-    
     return "";
   }
   esp_camera_fb_return(fb);
   return "failed, rc="+client.state();
 }
 
-void getCommand(char c) {
-  if (c=='?') receiveState=1;
-  if ((c==' ')||(c=='\r')||(c=='\n')) receiveState=0;
-  
-  if (receiveState==1) {
-    command=command+String(c);
-    
-    if (c=='=') cmdState=0;
-    if (c==';') pState++;
-  
-    if ((cmdState==1)&&((c!='?')||(questionState==1))) cmd=cmd+String(c);
-    if ((cmdState==0)&&(pState==1)&&((c!='=')||(equalState==1))) P1=P1+String(c);
-    if ((cmdState==0)&&(pState==2)&&(c!=';')) P2=P2+String(c);
-    if ((cmdState==0)&&(pState==3)&&(c!=';')) P3=P3+String(c);
-    if ((cmdState==0)&&(pState==4)&&(c!=';')) P4=P4+String(c);
-    if ((cmdState==0)&&(pState==5)&&(c!=';')) P5=P5+String(c);
-    if ((cmdState==0)&&(pState==6)&&(c!=';')) P6=P6+String(c);
-    if ((cmdState==0)&&(pState==7)&&(c!=';')) P7=P7+String(c);
-    if ((cmdState==0)&&(pState==8)&&(c!=';')) P8=P8+String(c);
-    if ((cmdState==0)&&(pState>=9)&&((c!=';')||(semicolonState==1))) P9=P9+String(c);
-    
-    if (c=='?') questionState=1;
-    if (c=='=') equalState=1;
-    if ((pState>=9)&&(c==';')) semicolonState=1;
-  }
-}

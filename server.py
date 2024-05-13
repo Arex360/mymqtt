@@ -35,7 +35,10 @@ def on_messageStart(client, userdata, msg):
     #print(len(a))
     
 # Create MQTT client
+        
 client = mqtt.Client()
+#client.tls_set()  # <--- even without arguments
+#client.username_pw_set(username="arex", password="123")
 client.on_message = on_messageStart 
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.subscribe(MQTT_TOPIC)
