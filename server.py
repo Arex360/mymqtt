@@ -8,18 +8,19 @@ MQTT_TOPIC = "client9"
 
 # Callback when a message is received
 def on_message(client, userdata, msg):
-    print(f"Received image from topic {msg.topic}")
-    url = f'http://localhost:5000/postImage/{msg.topic}'
-    myobj = {'base64': msg.payload,'client':msg.topic}
-    x = requests.post(url, json = myobj)
+    print(len(msg.payload))
+    #print(f"Received image from topic {msg.topic}")
+    #url = f'http://localhost:5000/postImage/{msg.topic}'
+    #myobj = {'base64': msg.payload,'client':msg.topic}
+    #x = requests.post(url, json = myobj)
     # Decode base64-encoded image
-    image_data = base64.b64decode(msg.payload)
+    #image_data = base64.b64decode(msg.payload)
     
     # Save the image to a file
-    with open("received_image.jpg", "wb") as f:
-        f.write(image_data)
+    #with open("received_image.jpg", "wb") as f:
+    #    f.write(image_data)
     
-    print("Image saved as received_image.jpg")
+    #print("Image saved as received_image.jpg")
 
 # Create MQTT client
 client = mqtt.Client()
