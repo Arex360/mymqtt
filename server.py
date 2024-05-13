@@ -13,17 +13,22 @@ def on_messageStart(client, userdata, msg):
         print("its start")
         a = a.replace("_0_","")
         a = a.replace("b'","")
+        a = a.replace("'","")
         myobj = {'base64': a}
         print(a)
         requests.post(f'http://localhost:5000/postImagePart/{msg.topic}/0',myobj)
     if "_1_" in a:
         print("its mids")
         a = a.replace("_1_","")
+        a = a.replace("b'","")
+        a = a.replace("'","")
         myobj = {'base64': a}
         requests.post(f'http://localhost:5000/postImagePart/{msg.topic}/1',myobj)
     if "_2_" in a:
         print("its end")
         a = a.replace("_2_","")
+        a = a.replace("b'","")
+        a = a.replace("'","")
         myobj = {'base64': a}
         requests.post(f'http://localhost:5000/postImagePart/{msg.topic}/2',myobj)
         print("request ended")
