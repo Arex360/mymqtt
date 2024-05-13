@@ -12,6 +12,7 @@ def on_messageStart(client, userdata, msg):
     if "_0_" in a:
         print("its start")
         a = a.replace("_0_","")
+        a = a.replace("b'","")
         myobj = {'base64': a}
         print(a)
         requests.post(f'http://localhost:5000/postImagePart/{msg.topic}/0',myobj)
