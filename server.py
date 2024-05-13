@@ -30,25 +30,14 @@ def on_messageStart(client, userdata, msg):
         a = a.replace("b'","")
         a = a.replace("'","")
         myobj = {'base64': a}
-        #requests.post(f'http://localhost:5000/postImagePart/{msg.topic}/2',myobj)
+        requests.post(f'http://localhost:5000/postImagePart/{msg.topic}/2',myobj)
         print("request ended")
     print(len(a))
-
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"message": "Hello, World"}
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3005)
-    client = mqtt.Client()
-    client.on_message = on_messageStart 
-    client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    client.subscribe(MQTT_TOPIC)
-    client.loop_forever()
+    
 # Create MQTT client
-
+client = mqtt.Client()
+client.on_message = on_messageStart 
+client.connect(MQTT_BROKER, MQTT_PORT, 60)
+client.subscribe(MQTT_TOPIC)
+client.loop_forever()
 
