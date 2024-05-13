@@ -4,7 +4,7 @@ import base64
 # MQTT Settings
 MQTT_BROKER = "152.67.19.152"
 MQTT_PORT = 1883
-MQTT_TOPIC = "image_topic"
+MQTT_TOPIC = "client9"
 
 # Read the image file
 def read_image_file(file_path):

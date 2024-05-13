@@ -13,11 +13,11 @@ def on_message(client, userdata, msg):
     myobj = {'base64': msg.payload,'client':msg.topic}
     x = requests.post(url, json = myobj)
     # Decode base64-encoded image
-    #image_data = base64.b64decode(msg.payload)
+    image_data = base64.b64decode(msg.payload)
     
     # Save the image to a file
-    #with open("received_image.jpg", "wb") as f:
-    #    f.write(image_data)
+    with open("received_image.jpg", "wb") as f:
+        f.write(image_data)
     
     print("Image saved as received_image.jpg")
 
