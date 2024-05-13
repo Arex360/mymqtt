@@ -8,9 +8,10 @@ MQTT_TOPIC = "client9"
 
 # Callback when a message is received
 def on_messageStart(client, userdata, msg):
-    if "_0_" in msg.payload:
+    a = str(msg.payload)
+    if "_0_" in a:
         print("its start")
-    print(len(msg.payload))
+    print(len(a))
 
 
 # Create MQTT client
