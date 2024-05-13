@@ -11,6 +11,10 @@ def on_messageStart(client, userdata, msg):
     a = str(msg.payload)
     if "_0_" in a:
         print("its start")
+    if "_1_" in a:
+        print("its mids")
+    if "_2_" in a:
+        print("its end")
     print(len(a))
 
 
