@@ -13,6 +13,7 @@ def on_messageStart(client, userdata, msg):
         print("its start")
         a = a.replace("_0_","")
         myobj = {'base64': a}
+        print(a)
         requests.post(f'http://localhost:5000/postImagePart/{msg.topic}/0',myobj)
     if "_1_" in a:
         print("its mids")
