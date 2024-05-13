@@ -5,10 +5,12 @@ import requests
 MQTT_BROKER = "152.67.19.152"  # Change this if your broker is on a different machine
 MQTT_PORT = 1883
 MQTT_TOPIC = "client9"
-
+a = ""
 # Callback when a message is received
 def on_message(client, userdata, msg):
+    a = a + "s"
     print(len(msg.payload))
+    print(a)
     #print(f"Received image from topic {msg.topic}")
     #url = f'http://localhost:5000/postImage/{msg.topic}'
     #myobj = {'base64': msg.payload,'client':msg.topic}
