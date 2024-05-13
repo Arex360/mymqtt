@@ -32,7 +32,7 @@ def on_messageStart(client, userdata, msg):
         myobj = {'base64': a}
         requests.post(f'http://localhost:5000/postImagePart/{msg.topic}/2',myobj)
         print("request ended")
-    print(len(a))
+    #print(len(a))
     
 # Create MQTT client
 client = mqtt.Client()
